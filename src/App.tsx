@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 import Router from "./Router";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // 렌더링 될 떄, 그 컴포넌트는 전역 스코프에 스타일들을 올려줘
 // 기본값 제거
@@ -71,6 +72,7 @@ function App() {
     <>
       <GlobalStyle />
       <Router />
+      <ReactQueryDevtools initialIsOpen={true} />
     </>
   );
 }
