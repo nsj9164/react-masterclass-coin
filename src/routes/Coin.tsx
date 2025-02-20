@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useLocation, useParams } from "react-router-dom";
 import { styled } from "styled-components";
 import { fetchCoinInfo, fetchCoins, fetchCoinTickers } from "../api";
+import { Helmet } from "react-helmet-async";
 
 const Title = styled.h1`
   font-size: 48px;
@@ -130,8 +131,8 @@ interface PriceData {
   };
 }
 
-interface RouteParams {
-  coinId: string;
+interface ICoinProps {
+  isDark: boolean;
 }
 
 function Coin() {
@@ -140,9 +141,11 @@ function Coin() {
   const priceMatch = useMatch("/:coinId/price");
   const chartMatch = useMatch("/:coinId/chart");
   const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>({
-    queryKey: ["info", "coinId"],
-    queryFn: () => fetchCoinInfo(coinId as string),
+    queryKey: ["info", "coinId"], // 1. unique key
+    queryFn: () => fetchCoinInfo(coinId as string), // 2. fetcher 함수
     enabled: !!coinId,
+    // 3. 선택적인 object
+    refetchInterval: 5000,
   });
   const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>({
     queryKey: ["tickers", "coinId"],
@@ -165,6 +168,9 @@ function Coin() {
   const loading = infoLoading || tickersLoading;
   return (
     <Container>
+      <Helmet>
+        {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+      </Helmet>
       <Header>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
@@ -184,8 +190,8 @@ function Coin() {
               <span>${infoData?.symbol}</span>
             </OverviewItem>
             <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
+              <span>Price:</span>
+              <span>{tickersData?.quotes.USD.price}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -199,7 +205,6 @@ function Coin() {
               <span>{tickersData?.max_supply}</span>
             </OverviewItem>
           </Overview>
-
           <Tabs>
             <Tab isActive={chartMatch !== null}>
               <Link to={`/${coinId}/chart`}>Chart</Link>
@@ -209,7 +214,7 @@ function Coin() {
             </Tab>
           </Tabs>
 
-          <Outlet />
+          <Outlet context={{ coinId: coinId }} />
         </>
       )}
     </Container>

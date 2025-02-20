@@ -1,6 +1,11 @@
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle, ThemeProvider } from "styled-components";
 import Router from "./Router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { HelmetProvider } from "react-helmet-async";
+import { darkTheme, lightTheme } from "./theme";
+import { useState } from "react";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atoms";
 
 // 렌더링 될 떄, 그 컴포넌트는 전역 스코프에 스타일들을 올려줘
 // 기본값 제거
@@ -68,11 +73,17 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function App() {
+  const isDark = useRecoilValue(isDarkAtom);
   return (
     <>
-      <GlobalStyle />
-      <Router />
-      <ReactQueryDevtools initialIsOpen={true} />
+      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+        <button>Toggle Mode</button>
+        <GlobalStyle />
+        <HelmetProvider>
+          <Router />
+        </HelmetProvider>
+        <ReactQueryDevtools initialIsOpen={true} />
+      </ThemeProvider>
     </>
   );
 }
